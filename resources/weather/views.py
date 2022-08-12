@@ -1,6 +1,7 @@
 from resources.weather.weatherman import Weatherman
 from rest_framework.views import APIView
-from service.utils import ShortResponse, get_param_or_404
+from service.utils import get_param_or_404
+from django.http import JsonResponse
 
 
 class Weather(APIView):
@@ -9,7 +10,7 @@ class Weather(APIView):
         city = get_param_or_404(params, "city")
         country = get_param_or_404(params, "country")
         try:
-            result = Weatherman().get_current_weather(city, country)
-            ShortResponse(200, result)
+            result = Weatherman(city, country).get_current_weather()
+            return JsonResponse(status=200, data=result)
         except Exception as e:
-            ShortResponse(500, str(e))
+            return JsonResponse(status=500, data=str(e))
