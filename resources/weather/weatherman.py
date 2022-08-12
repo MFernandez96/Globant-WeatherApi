@@ -39,15 +39,11 @@ class Weatherman(object):
 
     def parse_weather_data(self):
         self.result["location_name"] = f"""{self.city}, {self.country.upper()}"""
-        self.result[
-            "temperature"
-        ] = f"""{self.temp_utils.kelvin_to_celsius(self.weather["main"]["temp"])} °C | {self.temp_utils.kelvin_to_fahrenheit(self.weather["main"]["temp"])} °F"""
-        self.result[
-            "wind"
-        ] = f"""{beaufort_scale_ms(self.weather["wind"]["speed"])}, {self.weather["wind"]["speed"]} m/s, {self.wind_utils.degrees_to_compass(self.weather["wind"]["deg"])}"""
-        self.result["cloudiness"] = self.weather["weather"][0]["description"]
-        self.result["pressure"] = f"""{self.weather["main"]["pressure"]} hPa"""
-        self.result["humidity"] = f"""{self.weather["main"]["humidity"]}%"""
+        self.result["temperature"] = self.get_temperature(self.weather)
+        self.result["wind"] = self.get_wind(self.weather)
+        self.result["cloudiness"] = self.get_cloudiness(self.weather)
+        self.result["pressure"] = self.get_pressure(self.weather)
+        self.result["humidity"] = self.get_humidity(self.weather)
         self.result["sunrise"] = datetime.utcfromtimestamp(
             self.weather["sys"]["sunrise"]
         ).strftime("%H:%M")
@@ -68,20 +64,17 @@ class Weatherman(object):
             for forecast in self.forecast["list"]:
                 forecast_time = forecast["dt_txt"]
                 forecast_data[forecast_time] = {
-                    "temperature": f"""{int(self.temp_utils.kelvin_to_celsius(forecast["main"]["temp"]))} °C | {int(self.temp_utils.kelvin_to_fahrenheit(forecast["main"]["temp"]))} °F"""
+                    "temperature": self.get_temperature(forecast),
                 }
+                forecast_data[forecast_time]["pressure"] = self.get_pressure(forecast)
 
-                forecast_data[forecast_time][
-                    "wind"
-                ] = f"""{beaufort_scale_ms(forecast["wind"]["speed"])}, {forecast["wind"]["speed"]} m/s, {self.wind_utils.degrees_to_compass(forecast["wind"]["deg"])}"""
+                forecast_data[forecast_time]["wind"] = self.get_wind(forecast)
 
-                forecast_data[forecast_time]["cloudiness"] = forecast["weather"][0][
-                    "description"
-                ]
+                forecast_data[forecast_time]["cloudiness"] = self.get_cloudiness(
+                    forecast
+                )
 
-                forecast_data[forecast_time][
-                    "humidity"
-                ] = f"""{forecast["main"]["humidity"]}%"""
+                forecast_data[forecast_time]["humidity"] = self.get_humidity(forecast)
 
                 forecast_data[forecast_time]["sunrise"] = datetime.utcfromtimestamp(
                     self.forecast["city"]["sunrise"]
@@ -97,6 +90,21 @@ class Weatherman(object):
             self.result["forecast"] = forecast_data
         else:
             self.result["forecast"] = {"msg": "No forecast available"}
+
+    def get_temperature(self, data: dict) -> str:
+        return f"""{int(self.temp_utils.kelvin_to_celsius(data["main"]["temp"]))} °C | {int(self.temp_utils.kelvin_to_fahrenheit(data["main"]["temp"]))} °F"""
+
+    def get_wind(self, data: dict) -> str:
+        return f"""{beaufort_scale_ms(data["wind"]["speed"])}, {data["wind"]["speed"]} m/s, {self.wind_utils.degrees_to_compass(data["wind"]["deg"])}"""
+
+    def get_cloudiness(self, data: dict) -> str:
+        return data["weather"][0]["description"]
+
+    def get_pressure(self, data: dict) -> str:
+        return data["main"]["pressure"]
+
+    def get_humidity(self, data: dict) -> str:
+        return data["main"]["humidity"]
 
 
 class WindUtils:

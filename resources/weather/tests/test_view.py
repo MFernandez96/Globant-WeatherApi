@@ -26,3 +26,15 @@ def test_weather_view():
         "requested_time",
         "forecast",
     }
+    assert type(data["forecast"]) == dict
+    first_forecast = next(iter(data["forecast"]))
+    assert set(data["forecast"][first_forecast].keys()) == {
+        "pressure",
+        "temperature",
+        "humidity",
+        "wind",
+        "sunrise",
+        "sunset",
+        "cloudiness",
+        "geo_coordinates",
+    }
