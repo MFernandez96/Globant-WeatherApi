@@ -13,16 +13,21 @@ export PATH=/home/<user_name>/.local/bin:$PATH
 
 pip install -r requirements/base.txt
 
-# How to run
+# Load env variables
 
 export PYTHONPATH={PATH_TO_REPO}:$PYTHONPATH
 set -o allexport; source environments/local; set +o allexport
 export DJANGO_ALLOW_ASYNC_UNSAFE=True
+
+# How to run
+
 python3 manage.py runserver
 
 # run tests
 
-export PYTHONPATH={PATH_TO_REPO}:$PYTHONPATH
-set -o allexport; source environments/local; set +o allexport
-export DJANGO_ALLOW_ASYNC_UNSAFE=True
 pytest
+
+# see coverage
+
+coverage run -m pytest
+coverage report
