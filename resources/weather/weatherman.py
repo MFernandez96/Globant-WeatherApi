@@ -30,8 +30,12 @@ class Weatherman(object):
         self.forecast = cache.get("forecast")
 
     def get_from_api(self):
-        self.weather_url = f"""http://api.openweathermap.org/data/2.5/weather?q={self.city},{self.country}&appid={os.getenv("OPENWEATHER_API_KEY")}"""
-        self.forecast_url = f"""http://api.openweathermap.org/data/2.5/forecast?q={self.city},{self.country}&appid={os.getenv("OPENWEATHER_API_KEY")}"""
+        query_city = f"""q={self.city},{self.country}"""
+        api_id = f"""&appid={os.getenv("OPENWEATHER_API_KEY")}"""
+        weather_api = """http://api.openweathermap.org/data/2.5/weather?"""
+        forecast_api = """http://api.openweathermap.org/data/2.5/forecast?"""
+        self.weather_url = f"{weather_api}{query_city}{api_id}"
+        self.forecast_url = f"{forecast_api}{query_city}{api_id}"
         self.weather = requests.get(self.weather_url).json()
         self.forecast = requests.get(self.forecast_url).json()
         cache.set("weather", self.weather, timeout=120)
@@ -92,10 +96,15 @@ class Weatherman(object):
             self.result["forecast"] = {"msg": "No forecast available"}
 
     def get_temperature(self, data: dict) -> str:
-        return f"""{int(self.temp_utils.kelvin_to_celsius(data["main"]["temp"]))} °C | {int(self.temp_utils.kelvin_to_fahrenheit(data["main"]["temp"]))} °F"""
+        celsius = int(self.temp_utils.kelvin_to_celsius(data["main"]["temp"]))
+        fahrenheit = int(self.temp_utils.kelvin_to_fahrenheit(data["main"]["temp"]))
+        return f"""{celsius} °C | {fahrenheit} °F"""
 
     def get_wind(self, data: dict) -> str:
-        return f"""{beaufort_scale_ms(data["wind"]["speed"])}, {data["wind"]["speed"]} m/s, {self.wind_utils.degrees_to_compass(data["wind"]["deg"])}"""
+        wind_text = beaufort_scale_ms(data["wind"]["speed"])
+        wind_speed = data["wind"]["speed"]
+        wind_compass = self.wind_utils.degrees_to_compass(data["wind"]["deg"])
+        return f"""{wind_text}, {wind_speed} m/s, {wind_compass}"""
 
     def get_cloudiness(self, data: dict) -> str:
         return data["weather"][0]["description"]
