@@ -38,3 +38,10 @@ def test_weather_view():
         "cloudiness",
         "geo_coordinates",
     }
+
+
+def test_failing_weather_view():
+    request = namedtuple("Request", ["query_params"])
+    request.query_params = {"city": "London", "country": None}
+    with pytest.raises(Exception):
+        response = Weather().get(request)
