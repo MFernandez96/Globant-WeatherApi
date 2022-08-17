@@ -28,6 +28,10 @@ export DJANGO_ALLOW_ASYNC_UNSAFE=True
 
 python3 manage.py runserver
 
+## Run from docker if needed
+
+docker-compose -f docker-compose.yml up
+
 ## run tests
 
 pytest
